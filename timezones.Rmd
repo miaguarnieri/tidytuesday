@@ -1,0 +1,53 @@
+---
+title: "Time Zones"
+author: "Mia Guarnieri"
+date: "2023-04-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidytuesdayR)
+library(tidyverse)
+```
+
+#Read in data
+
+```{r timezones}
+transitions <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-03-28/transitions.csv')
+
+timezones <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-03-28/timezones.csv')
+
+timezone_countries <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-03-28/timezone_countries.csv')
+
+countries <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2023/2023-03-28/countries.csv')
+```
+
+#Wrangle data
+```{r}
+countries_timezones <- merge(countries, timezone_countries)
+
+ct_tz <- merge(countries_timezones, timezones)
+
+timezones_full <- merge(ct_tz, transitions)
+
+```
+
+#Make a map
+```{r}
+world_map <- map_data("world")
+
+names(timezones_full)[names(timezones_full) == 'place_name'] <- 'region'
+
+timezone_map <- left_join(world_map, timezones_full, by = "region")
+  
+# create world map using ggplot() function
+ggplot() +
+  geom_map(
+    data = world_map, map = world_map,
+    aes(long, lat, map_id = region),
+    fill = "lightgray", color = "darkgray") +
+  geom_point(data = timezones_full, aes(x = longitude, y = latitude, color = dst))
+
+```
+
